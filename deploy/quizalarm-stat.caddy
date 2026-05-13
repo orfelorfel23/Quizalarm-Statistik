@@ -1,0 +1,3 @@
+quizalarm-stat.orfel.de {
+	reverse_proxy quizalarm-stat:7850
+}
