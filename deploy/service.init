@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+REPO_URL="https://git.orfel.de/Jannik/Quizalarm-Stat.git"
+APP_DIR="/mnt/Jannik-Cloud-Volume-01/quizalarm-stat/app"
+
+echo "[quizalarm-stat] Syncing app code from Gitea..."
+
+MAX_RETRIES=10
+COUNT=0
+until git ls-remote "${REPO_URL}" &>/dev/null; do
+    COUNT=$((COUNT + 1))
+    if [[ ${COUNT} -ge ${MAX_RETRIES} ]]; then
+        echo "[quizalarm-stat] ERROR: Cannot reach Gitea after ${MAX_RETRIES} attempts."
+        exit 1
+    fi
+    echo "[quizalarm-stat] Gitea not yet reachable, retrying in 5s... (${COUNT}/${MAX_RETRIES})"
+    sleep 5
+done
+
+if [ -d "${APP_DIR}/.git" ]; then
+    echo "[quizalarm-stat] Pulling latest changes..."
+    git -C "${APP_DIR}" pull --ff-only
+else
+    echo "[quizalarm-stat] Fresh clone..."
+    mkdir -p "$(dirname "${APP_DIR}")"
+    git clone "${REPO_URL}" "${APP_DIR}"
+fi
+
+echo "[quizalarm-stat] Building Docker image..."
+cd /opt/Jannik-Cloud/services/quizalarm-stat
+docker compose build --no-cache
+
+echo "[quizalarm-stat] Init complete."

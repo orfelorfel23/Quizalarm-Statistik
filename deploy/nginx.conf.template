@@ -1,0 +1,74 @@
+# Quizalarm-Stat – nginx config (rendered at container start by envsubst).
+# SECURITY:
+#  - The Baserow token NEVER reaches the browser. It is injected here as a
+#    request header before forwarding to Baserow.
+#  - /api/baserow/ is read-only: only GET requests are allowed.
+#  - Optional table whitelist below restricts which tables can be queried.
+
+worker_processes  1;
+events { worker_connections 1024; }
+
+http {
+    include       /etc/nginx/mime.types;
+    default_type  application/octet-stream;
+    sendfile      on;
+    keepalive_timeout 65;
+    server_tokens off;
+
+    # Hide upstream auth header from any error/debug output
+    proxy_hide_header X-Powered-By;
+
+    server {
+        listen ${PORT};
+        server_name _;
+
+        root /usr/share/nginx/html;
+        index index.html;
+
+        # SPA fallback
+        location / {
+            try_files $uri $uri/ /index.html;
+            add_header Cache-Control "no-cache" always;
+        }
+
+        # Static assets – long cache
+        location /assets/ {
+            try_files $uri =404;
+            add_header Cache-Control "public, max-age=31536000, immutable" always;
+        }
+
+        # Runtime config (no token here)
+        location = /config.json {
+            try_files $uri =404;
+            add_header Cache-Control "no-store" always;
+        }
+
+        # ---- Baserow read-only proxy ----
+        # Only GET allowed. Token injected server-side. Table whitelist enforced
+        # via regex – only IDs configured in .env are reachable.
+        location ~ ^/api/baserow/api/database/rows/table/(${ALLOWED_TABLE_IDS})/ {
+            limit_except GET { deny all; }
+
+            # strip /api/baserow prefix
+            rewrite ^/api/baserow/(.*)$ /$1 break;
+
+            proxy_pass ${BASEROW_URL};
+            proxy_http_version 1.1;
+            proxy_set_header Host              $proxy_host;
+            proxy_set_header X-Forwarded-For   $remote_addr;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header Authorization     "Token ${BASEROW_TOKEN}";
+            proxy_set_header Accept            "application/json";
+
+            # never let the upstream set cookies / cache auth
+            proxy_hide_header Set-Cookie;
+            proxy_pass_header Server;
+            add_header Cache-Control "no-store" always;
+        }
+
+        # Anything else under /api/baserow/ is denied (e.g. admin endpoints).
+        location /api/baserow/ {
+            return 403;
+        }
+    }
+}

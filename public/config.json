@@ -1,0 +1,14 @@
+{
+  "siteTitle": "Quizalarm Auswertung",
+  "siteSubtitle": "Live-Ergebnisse",
+  "tables": {
+    "answers": 0,
+    "sets": [
+      { "key": "A", "label": "Fragenset A", "tableId": 0 },
+      { "key": "B", "label": "Fragenset B", "tableId": 0 },
+      { "key": "C", "label": "Fragenset C", "tableId": 0 }
+    ]
+  },
+  "pollIntervalMs": 20000,
+  "mock": true
+}
