@@ -37,11 +37,16 @@ cat > /usr/share/nginx/html/config.json <<EOF
 }
 EOF
 
+# --- Derive the Baserow hostname for the Host header ---
+# When BASEROW_URL is an internal Docker address (e.g. http://baserow:80),
+# we still need to send the correct Host header so Baserow's Caddy routes it.
+export BASEROW_HOST="${BASEROW_HOST:-$(echo "$BASEROW_URL" | sed -E 's|^https?://||;s|:[0-9]+$||;s|/.*||')}"
+
 # --- Render nginx.conf with token + table whitelist ---
-export PORT BASEROW_URL BASEROW_TOKEN
+export PORT BASEROW_URL BASEROW_TOKEN BASEROW_HOST
 export ALLOWED_TABLE_IDS="${ALLOWED_IDS}"
 
-envsubst '${PORT} ${BASEROW_URL} ${BASEROW_TOKEN} ${ALLOWED_TABLE_IDS}' \
+envsubst '${PORT} ${BASEROW_URL} ${BASEROW_TOKEN} ${BASEROW_HOST} ${ALLOWED_TABLE_IDS}' \
     < /etc/nginx/templates-src/nginx.conf.template \
     > /etc/nginx/nginx.conf
 

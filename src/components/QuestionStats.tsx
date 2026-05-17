@@ -5,12 +5,12 @@ import { FIELDS } from "@/config/mappings";
 import { BarChart3 } from "lucide-react";
 import { useMemo } from "react";
 
-function SetStats({ setKey, tableId }: { setKey: string; tableId: number }) {
+function SetStats({ setKey, setLabel, tableId }: { setKey: string; setLabel: string; tableId: number }) {
   const { data: answers = [] } = useAnswers();
   const { data: questions = [] } = useQuestions(setKey, tableId);
 
   const rows = useMemo(() => {
-    const setAnswers = answers.filter((a: any) => String(a[FIELDS.answers.set]) === setKey);
+    const setAnswers = answers.filter((a: any) => String(a[FIELDS.answers.set]) === setLabel);
     return questions.map((q: any) => {
       const qid = String(q[FIELDS.question.id]);
       const given = setAnswers.filter((a: any) => String(a[FIELDS.answers.questionId]) === qid);
@@ -97,7 +97,7 @@ export function QuestionStats() {
         </TabsList>
         {sets.map((s) => (
           <TabsContent key={s.key} value={s.key} className="mt-4">
-            <SetStats setKey={s.key} tableId={s.tableId} />
+            <SetStats setKey={s.key} setLabel={s.label} tableId={s.tableId} />
           </TabsContent>
         ))}
       </Tabs>
