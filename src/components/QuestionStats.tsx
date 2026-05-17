@@ -17,7 +17,16 @@ function SetStats({ setKey, tableId }: { setKey: string; tableId: number }) {
       const counts: Record<string, number> = { A: 0, B: 0, C: 0, D: 0 };
       let correct = 0;
       for (const a of given) {
-        const v = String(a[FIELDS.answers.answer] ?? "").toUpperCase();
+        let v = String(a[FIELDS.answers.answer] ?? "").toUpperCase();
+        
+        // Falls die Antwort als Volltext statt Buchstabe gespeichert wurde, auf A/B/C/D mappen
+        if (counts[v] === undefined) {
+          if (v === String(q[FIELDS.question.optionA] ?? "").toUpperCase()) v = "A";
+          else if (v === String(q[FIELDS.question.optionB] ?? "").toUpperCase()) v = "B";
+          else if (v === String(q[FIELDS.question.optionC] ?? "").toUpperCase()) v = "C";
+          else if (v === String(q[FIELDS.question.optionD] ?? "").toUpperCase()) v = "D";
+        }
+
         if (counts[v] !== undefined) counts[v] += 1;
         if (a[FIELDS.answers.correct]) correct += 1;
       }
