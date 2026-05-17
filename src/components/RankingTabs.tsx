@@ -6,8 +6,8 @@ import { FIELDS } from "@/config/mappings";
 import { Trophy } from "lucide-react";
 import { useMemo } from "react";
 
-function rankFor(answers: any[], setLabel: string) {
-  const rows = answers.filter((a) => String(a[FIELDS.answers.set]) === setLabel);
+function rankFor(answers: any[], setKey: string) {
+  const rows = answers.filter((a) => String(a[FIELDS.answers.set]).trim().endsWith(setKey));
   const byUser = new Map<string, { user: string; points: number; correct: number; total: number }>();
   for (const a of rows) {
     const u = String(a[FIELDS.answers.user] ?? "—");
@@ -26,7 +26,7 @@ export function RankingTabs() {
   const sets = cfg?.tables.sets ?? [];
 
   const rankings = useMemo(
-    () => Object.fromEntries(sets.map((s) => [s.key, rankFor(answers, s.label)])),
+    () => Object.fromEntries(sets.map((s) => [s.key, rankFor(answers, s.key)])),
     [answers, sets],
   );
 
