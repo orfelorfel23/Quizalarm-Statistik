@@ -1,7 +1,6 @@
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Button } from "@/components/ui/button";
 import { useAnswers, useConfig, useQuestions } from "@/hooks/useBaserow";
 import { FIELDS } from "@/config/mappings";
 import { BarChart3, ArrowDown, ArrowUp } from "lucide-react";
@@ -176,9 +175,13 @@ export function QuestionStats() {
               <SelectItem value="rate">Richtig-Quote</SelectItem>
             </SelectContent>
           </Select>
-          <Button variant="outline" size="icon" className="bg-secondary" onClick={() => setSortDesc(!sortDesc)}>
+          <button 
+            type="button"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-secondary hover:bg-accent hover:text-accent-foreground h-10 w-10 shrink-0" 
+            onClick={() => setSortDesc(!sortDesc)}
+          >
             {sortDesc ? <ArrowDown className="h-4 w-4" /> : <ArrowUp className="h-4 w-4" />}
-          </Button>
+          </button>
         </div>
       </div>
       <Tabs defaultValue={sets[0].key} className="flex-1">
