@@ -22,6 +22,7 @@ export function Header() {
             <h1 className="font-display text-3xl tracking-wide leading-none glow-text">{title}</h1>
             {sub && <p className="text-sm text-muted-foreground mt-1">{sub}</p>}
           </div>
+        </div>
       </div>
     </header>
   );
