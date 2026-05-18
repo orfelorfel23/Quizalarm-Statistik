@@ -42,6 +42,15 @@ EOF
 # we still need to send the correct Host header so Baserow's Caddy routes it.
 export BASEROW_HOST="${BASEROW_HOST:-$(echo "$BASEROW_URL" | sed -E 's|^https?://||;s|:[0-9]+$||;s|/.*||')}"
 
+# --- Force internal Docker routing ---
+# If BASEROW_URL points to the public domain (which fails due to Hairpin NAT),
+# we rewrite it to the internal Docker service address.
+case "$BASEROW_URL" in
+  *br.orfel.de*)
+    export BASEROW_URL="http://baserow:80"
+    ;;
+esac
+
 # --- Render nginx.conf with token + table whitelist ---
 export PORT BASEROW_URL BASEROW_TOKEN BASEROW_HOST
 export ALLOWED_TABLE_IDS="${ALLOWED_IDS}"
