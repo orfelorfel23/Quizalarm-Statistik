@@ -26,13 +26,23 @@ function SetStats({ setKey, tableId, sortBy, sortDesc }: { setKey: string; table
         return true;
       });
       
+      // Helper to get option text based on letter
+      const getOptionText = (optKey: string) => {
+        if (optKey === "A") return String(q[FIELDS.question.optionA] ?? "");
+        if (optKey === "B") return String(q[FIELDS.question.optionB] ?? "");
+        if (optKey === "C") return String(q[FIELDS.question.optionC] ?? "");
+        if (optKey === "D") return String(q[FIELDS.question.optionD] ?? "");
+        return "";
+      };
+
       const counts: Record<string, number> = {};
       const normToLabel: Record<string, string> = {};
       
       // Initialize with expected options if they exist
       const opts = ["A", "B", "C", "D"] as const;
       for (const opt of opts) {
-        if (q[`option${opt}`] !== undefined && q[`option${opt}`] !== null && String(q[`option${opt}`]).trim() !== "") {
+        const text = getOptionText(opt).trim();
+        if (text !== "") {
           counts[opt] = 0;
         }
       }
@@ -49,7 +59,7 @@ function SetStats({ setKey, tableId, sortBy, sortDesc }: { setKey: string; table
           matchedOpt = normV.toUpperCase();
         } else {
           for (const opt of opts) {
-            const optText = String(q[`option${opt}`] ?? "").trim();
+            const optText = getOptionText(opt).trim();
             if (optText === "") continue;
             const normOpt = normalizeText(optText);
             // Fuzzy match if either string is a substantial substring of the other
@@ -83,7 +93,8 @@ function SetStats({ setKey, tableId, sortBy, sortDesc }: { setKey: string; table
       const optionsWithCounts = Object.entries(counts).map(([key, count]) => {
         let label = key;
         if (["A", "B", "C", "D"].includes(key)) {
-          label = String(q[`option${key}`] ?? key);
+          const t = getOptionText(key).trim();
+          if (t) label = t;
         } else {
           label = normToLabel[key] ?? key;
         }
@@ -107,7 +118,8 @@ function SetStats({ setKey, tableId, sortBy, sortDesc }: { setKey: string; table
 
       let solutionText = solution;
       if (["A", "B", "C", "D"].includes(solution)) {
-        solutionText = String(q[`option${solution}`] ?? solution);
+        const t = getOptionText(solution).trim();
+        if (t) solutionText = t;
       }
 
       return {
