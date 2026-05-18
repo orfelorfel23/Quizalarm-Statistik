@@ -22,11 +22,6 @@ export function Header() {
             <h1 className="font-display text-3xl tracking-wide leading-none glow-text">{title}</h1>
             {sub && <p className="text-sm text-muted-foreground mt-1">{sub}</p>}
           </div>
-        </div>
-        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-          <span className="h-2 w-2 rounded-full bg-success animate-pulse-dot" />
-          Live
-        </div>
       </div>
     </header>
   );

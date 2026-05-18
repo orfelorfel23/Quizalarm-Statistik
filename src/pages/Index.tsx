@@ -21,10 +21,6 @@ const Index = () => {
         <div className="grid gap-6 lg:grid-cols-2">
           <QuestionStats />
           <UserDetail />
-        </div>
-        <footer className="pt-6 pb-10 text-center text-xs text-muted-foreground">
-          quizalarm-stat · Daten aus Baserow · serverseitiger Proxy schützt den API-Token
-        </footer>
       </main>
     </div>
   );
