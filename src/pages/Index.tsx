@@ -5,6 +5,8 @@ import { QuestionStats } from "@/components/QuestionStats";
 import { UserDetail } from "@/components/UserDetail";
 import { useConfig } from "@/hooks/useBaserow";
 
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 const Index = () => {
   const { data: cfg } = useConfig();
   return (
@@ -17,13 +19,22 @@ const Index = () => {
           </div>
         )}
         <Overview />
-        <div className="grid gap-6 lg:grid-cols-2 items-start">
-          <div className="space-y-6">
+        <Tabs defaultValue="ranking" className="w-full">
+          <TabsList className="grid w-full grid-cols-3 mb-6 bg-secondary">
+            <TabsTrigger value="ranking" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Ranking</TabsTrigger>
+            <TabsTrigger value="stats" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Frage-Statistik</TabsTrigger>
+            <TabsTrigger value="user" className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">Nutzer-Detail</TabsTrigger>
+          </TabsList>
+          <TabsContent value="ranking" className="mt-0">
             <RankingTabs />
+          </TabsContent>
+          <TabsContent value="stats" className="mt-0">
+            <QuestionStats />
+          </TabsContent>
+          <TabsContent value="user" className="mt-0">
             <UserDetail />
-          </div>
-          <QuestionStats />
-        </div>
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

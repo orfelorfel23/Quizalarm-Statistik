@@ -6,6 +6,10 @@ import { FIELDS } from "@/config/mappings";
 import { BarChart3, ArrowDown, ArrowUp } from "lucide-react";
 import { useMemo, useState } from "react";
 
+function normalizeText(s: string) {
+  return s.toLowerCase().replace(/\s+/g, "");
+}
+
 function SetStats({ setKey, tableId, sortBy, sortDesc }: { setKey: string; tableId: number; sortBy: string; sortDesc: boolean }) {
   const { data: answers = [] } = useAnswers();
   const { data: questions = [] } = useQuestions(setKey, tableId);
@@ -14,9 +18,16 @@ function SetStats({ setKey, tableId, sortBy, sortDesc }: { setKey: string; table
     const setAnswers = answers.filter((a: any) => String(a[FIELDS.answers.set]).trim().endsWith(setKey));
     let mapped = questions.map((q: any, index: number) => {
       const qid = String(q[FIELDS.question.id]);
-      const given = setAnswers.filter((a: any) => String(a[FIELDS.answers.questionId]) === qid);
+      
+      // Filter out empty answers entirely
+      const given = setAnswers.filter((a: any) => {
+        if (String(a[FIELDS.answers.questionId]) !== qid) return false;
+        if (String(a[FIELDS.answers.answer] ?? "").trim() === "") return false;
+        return true;
+      });
       
       const counts: Record<string, number> = {};
+      const normToLabel: Record<string, string> = {};
       
       // Initialize with expected options if they exist
       const opts = ["A", "B", "C", "D"] as const;
@@ -28,42 +39,58 @@ function SetStats({ setKey, tableId, sortBy, sortDesc }: { setKey: string; table
 
       let correct = 0;
       for (const a of given) {
-        let rawAnswer = String(a[FIELDS.answers.answer] ?? "").trim();
-        let upperV = rawAnswer.toUpperCase();
-        let v = rawAnswer;
+        const rawAnswer = String(a[FIELDS.answers.answer] ?? "").trim();
+        const normV = normalizeText(rawAnswer);
+        let key = normV;
         
-        // Try to map full text back to standard options if possible
-        if (counts[upperV] !== undefined) {
-            v = upperV;
+        // Try mapping to predefined options (Multiple Choice) via exact or fuzzy matching
+        let matchedOpt = null;
+        if (["a", "b", "c", "d"].includes(normV)) {
+          matchedOpt = normV.toUpperCase();
         } else {
-            if (rawAnswer === String(q[FIELDS.question.optionA] ?? "").trim()) v = "A";
-            else if (rawAnswer === String(q[FIELDS.question.optionB] ?? "").trim()) v = "B";
-            else if (rawAnswer === String(q[FIELDS.question.optionC] ?? "").trim()) v = "C";
-            else if (rawAnswer === String(q[FIELDS.question.optionD] ?? "").trim()) v = "D";
+          for (const opt of opts) {
+            const optText = String(q[`option${opt}`] ?? "").trim();
+            if (optText === "") continue;
+            const normOpt = normalizeText(optText);
+            // Fuzzy match if either string is a substantial substring of the other
+            if (normV === normOpt || normV.startsWith(normOpt) || normOpt.startsWith(normV)) {
+              matchedOpt = opt;
+              break;
+            }
+          }
         }
 
-        if (counts[v] === undefined) {
-          counts[v] = 1;
+        if (matchedOpt && counts[matchedOpt] !== undefined) {
+          key = matchedOpt;
         } else {
-          counts[v] += 1;
+          // Free text grouping: use the first seen un-normalized text as the label for this group
+          if (!normToLabel[normV]) {
+            normToLabel[normV] = rawAnswer;
+            counts[key] = 0;
+          }
         }
+
+        if (counts[key] === undefined) counts[key] = 0;
+        counts[key] += 1;
         
         if (a[FIELDS.answers.correct]) correct += 1;
       }
 
       const total = given.length;
-      let solution = String(q[FIELDS.question.correctAnswer] ?? "").trim();
+      const solution = String(q[FIELDS.question.correctAnswer] ?? "").trim();
+      const normSolution = normalizeText(solution);
       
       const optionsWithCounts = Object.entries(counts).map(([key, count]) => {
         let label = key;
-        if (key === "A") label = String(q[FIELDS.question.optionA] ?? "A");
-        else if (key === "B") label = String(q[FIELDS.question.optionB] ?? "B");
-        else if (key === "C") label = String(q[FIELDS.question.optionC] ?? "C");
-        else if (key === "D") label = String(q[FIELDS.question.optionD] ?? "D");
+        if (["A", "B", "C", "D"].includes(key)) {
+          label = String(q[`option${key}`] ?? key);
+        } else {
+          label = normToLabel[key] ?? key;
+        }
         
         let isSolution = false;
-        if (solution.toUpperCase() === key.toUpperCase()) isSolution = true;
-        if (solution.toLowerCase() === label.toLowerCase()) isSolution = true;
+        if (normalizeText(key) === normSolution || normalizeText(label) === normSolution) isSolution = true;
+        if (solution.toUpperCase() === key) isSolution = true;
         
         return { key, label, count, isSolution };
       });
@@ -78,12 +105,10 @@ function SetStats({ setKey, tableId, sortBy, sortDesc }: { setKey: string; table
         return b.count - a.count;
       });
 
-      // Attempt to resolve full text for solution to display
       let solutionText = solution;
-      if (solution === "A") solutionText = String(q[FIELDS.question.optionA] ?? "A");
-      else if (solution === "B") solutionText = String(q[FIELDS.question.optionB] ?? "B");
-      else if (solution === "C") solutionText = String(q[FIELDS.question.optionC] ?? "C");
-      else if (solution === "D") solutionText = String(q[FIELDS.question.optionD] ?? "D");
+      if (["A", "B", "C", "D"].includes(solution)) {
+        solutionText = String(q[`option${solution}`] ?? solution);
+      }
 
       return {
         qid,
