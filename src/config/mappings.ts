@@ -22,6 +22,7 @@ export const FIELDS = {
     optionB: "Antwort B",
     optionC: "Antwort C",
     optionD: "Antwort D",
+    image: "Bild",
   },
 } as const;
 

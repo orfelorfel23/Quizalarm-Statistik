@@ -5,6 +5,7 @@ import { useAnswers, useConfig, useQuestions } from "@/hooks/useBaserow";
 import { FIELDS } from "@/config/mappings";
 import { BarChart3, ArrowDown, ArrowUp } from "lucide-react";
 import { useMemo, useState } from "react";
+import { ImagePreview } from "./ImagePreview";
 
 function normalizeText(s: string) {
   return s.toLowerCase().replace(/\s+/g, "");
@@ -122,6 +123,12 @@ function SetStats({ setKey, tableId, sortBy, sortDesc }: { setKey: string; table
         if (t) solutionText = t;
       }
 
+      let imageUrl = "";
+      const imgData = q[FIELDS.question.image];
+      if (Array.isArray(imgData) && imgData.length > 0) {
+        imageUrl = imgData[0].url;
+      }
+
       return {
         qid,
         originalIndex: index,
@@ -129,6 +136,7 @@ function SetStats({ setKey, tableId, sortBy, sortDesc }: { setKey: string; table
         solutionText,
         optionsWithCounts,
         total,
+        imageUrl,
         rate: total ? Math.round((correct / total) * 100) : 0,
       };
     });
@@ -152,9 +160,12 @@ function SetStats({ setKey, tableId, sortBy, sortDesc }: { setKey: string; table
       {rows.map((r) => (
         <div key={r.qid} className="rounded-md border border-border bg-card/50 p-4">
           <div className="flex items-start justify-between gap-4 mb-4">
-            <div>
-              <p className="text-xs text-muted-foreground mb-1">{r.qid} · Lösung: <span className="text-primary font-semibold">{r.solutionText || "—"}</span></p>
-              <p className="font-medium leading-snug">{r.text}</p>
+            <div className="flex items-start gap-4">
+              {r.imageUrl && <ImagePreview url={r.imageUrl} />}
+              <div>
+                <p className="text-xs text-muted-foreground mb-1">{r.qid} · Lösung: <span className="text-primary font-semibold">{r.solutionText || "—"}</span></p>
+                <p className="font-medium leading-snug">{r.text}</p>
+              </div>
             </div>
             <div className="text-right shrink-0">
               <p className="text-2xl font-bold tabular-nums">{r.rate}%</p>

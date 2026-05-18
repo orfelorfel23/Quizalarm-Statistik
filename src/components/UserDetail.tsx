@@ -5,6 +5,7 @@ import { useAnswers, useConfig, useQuestions } from "@/hooks/useBaserow";
 import { FIELDS } from "@/config/mappings";
 import { User } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
+import { ImagePreview } from "./ImagePreview";
 
 function UserDetailTable({ rows, setKey, tableId }: { rows: any[]; setKey: string; tableId: number }) {
   const { data: questions = [] } = useQuestions(setKey, tableId);
@@ -36,6 +37,12 @@ function UserDetailTable({ rows, setKey, tableId }: { rows: any[]; setKey: strin
               let given = String(a[FIELDS.answers.answer] ?? "—");
               let expected = q ? String(q[FIELDS.question.correctAnswer] ?? "") : "";
               
+              let imageUrl = "";
+              const imgData = q?.[FIELDS.question.image];
+              if (Array.isArray(imgData) && imgData.length > 0) {
+                imageUrl = imgData[0].url;
+              }
+              
               // Map letter to full text for the expected answer
               if (expected === "A") expected = String(q[FIELDS.question.optionA] ?? "A");
               else if (expected === "B") expected = String(q[FIELDS.question.optionB] ?? "B");
@@ -50,7 +57,12 @@ function UserDetailTable({ rows, setKey, tableId }: { rows: any[]; setKey: strin
 
               return (
                 <TableRow key={a.id}>
-                  <TableCell className="font-medium text-sm leading-snug w-1/2">{qText}</TableCell>
+                  <TableCell className="font-medium text-sm leading-snug w-1/2">
+                    <div className="flex items-start gap-3">
+                      {imageUrl && <ImagePreview url={imageUrl} />}
+                      <span>{qText}</span>
+                    </div>
+                  </TableCell>
                   <TableCell>
                     {isCorrect ? (
                       <span className="text-success font-semibold">{given}</span>
