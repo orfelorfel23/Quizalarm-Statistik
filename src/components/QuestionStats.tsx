@@ -160,7 +160,7 @@ export function QuestionStats() {
   if (!sets.length) return null;
 
   return (
-    <Card className="surface p-5 flex flex-col h-full">
+    <Card className="surface p-5">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-4">
         <div className="flex items-center gap-2">
           <BarChart3 className="h-5 w-5 text-primary" />
@@ -184,7 +184,7 @@ export function QuestionStats() {
           </button>
         </div>
       </div>
-      <Tabs defaultValue={sets[0].key} className="flex-1">
+      <Tabs defaultValue={sets[0].key}>
         <TabsList className="bg-secondary">
           {sets.map((s) => (
             <TabsTrigger key={s.key} value={s.key} className="data-[state=active]:bg-primary data-[state=active]:text-primary-foreground">
@@ -193,7 +193,7 @@ export function QuestionStats() {
           ))}
         </TabsList>
         {sets.map((s) => (
-          <TabsContent key={s.key} value={s.key} className="flex-1">
+          <TabsContent key={s.key} value={s.key} className="mt-4">
             <SetStats setKey={s.key} tableId={s.tableId} sortBy={sortBy} sortDesc={sortDesc} />
           </TabsContent>
         ))}

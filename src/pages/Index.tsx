@@ -17,11 +17,13 @@ const Index = () => {
           </div>
         )}
         <Overview />
-        <div className="grid gap-6 lg:grid-cols-2">
-          <RankingTabs />
+        <div className="grid gap-6 lg:grid-cols-2 items-start">
+          <div className="space-y-6">
+            <RankingTabs />
+            <UserDetail />
+          </div>
           <QuestionStats />
         </div>
-        <UserDetail />
       </main>
     </div>
   );
