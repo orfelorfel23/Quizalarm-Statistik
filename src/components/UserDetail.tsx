@@ -3,20 +3,46 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useAnswers, useConfig, useQuestions } from "@/hooks/useBaserow";
 import { FIELDS } from "@/config/mappings";
-import { User } from "lucide-react";
+import { User, ArrowDown, ArrowUp } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { ImagePreview } from "./ImagePreview";
 
-function UserDetailTable({ rows, setKey, tableId }: { rows: any[]; setKey: string; tableId: number }) {
+function UserDetailTable({ rows, setKey, tableId, sortBy, sortDesc }: { rows: any[]; setKey: string; tableId: number; sortBy: string; sortDesc: boolean }) {
   const { data: questions = [] } = useQuestions(setKey, tableId);
   const totalPts = rows.reduce((s, a) => s + Number(a[FIELDS.answers.points] ?? 0), 0);
   const correct = rows.filter((a) => a[FIELDS.answers.correct]).length;
+  const quote = rows.length > 0 ? Math.round((correct / rows.length) * 100) : 0;
+
+  const sortedRows = useMemo(() => {
+    const arr = [...rows];
+    arr.sort((a, b) => {
+      let diff = 0;
+      if (sortBy === "time") {
+        const ta = new Date(String(a[FIELDS.answers.timestamp] ?? 0)).getTime();
+        const tb = new Date(String(b[FIELDS.answers.timestamp] ?? 0)).getTime();
+        diff = ta - tb;
+      } else if (sortBy === "points") {
+        diff = Number(a[FIELDS.answers.points] ?? 0) - Number(b[FIELDS.answers.points] ?? 0);
+      } else if (sortBy === "question") {
+        const qidA = String(a[FIELDS.answers.questionId]);
+        const qidB = String(b[FIELDS.answers.questionId]);
+        const idxA = questions.findIndex((x: any) => String(x[FIELDS.question.id]) === qidA);
+        const idxB = questions.findIndex((x: any) => String(x[FIELDS.question.id]) === qidB);
+        const orderA = idxA === -1 ? 999999 : idxA;
+        const orderB = idxB === -1 ? 999999 : idxB;
+        diff = orderA - orderB;
+      }
+      return sortDesc ? -diff : diff;
+    });
+    return arr;
+  }, [rows, questions, sortBy, sortDesc]);
 
   return (
     <>
-      <div className="grid grid-cols-3 gap-3 mb-4">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
         <div className="rounded-md bg-secondary p-3"><p className="text-xs text-muted-foreground uppercase tracking-wider">Antworten</p><p className="stat-num">{rows.length}</p></div>
         <div className="rounded-md bg-secondary p-3"><p className="text-xs text-muted-foreground uppercase tracking-wider">Korrekt</p><p className="stat-num text-success">{correct}</p></div>
+        <div className="rounded-md bg-secondary p-3"><p className="text-xs text-muted-foreground uppercase tracking-wider">Quote</p><p className="stat-num">{quote}%</p></div>
         <div className="rounded-md bg-primary text-primary-foreground p-3"><p className="text-xs uppercase tracking-wider opacity-80">Punkte</p><p className="stat-num">{totalPts}</p></div>
       </div>
       <div className="border rounded-md">
@@ -29,7 +55,7 @@ function UserDetailTable({ rows, setKey, tableId }: { rows: any[]; setKey: strin
             </TableRow>
           </TableHeader>
           <TableBody>
-            {rows.map((a: any) => {
+            {sortedRows.map((a: any) => {
               const qid = String(a[FIELDS.answers.questionId]);
               const q = questions.find((x: any) => String(x[FIELDS.question.id]) === qid);
               const qText = q ? String(q[FIELDS.question.text] ?? qid) : qid;
@@ -112,6 +138,8 @@ export function UserDetail() {
   }, [answers, current, availableSets]);
 
   const [selSetKey, setSelSetKey] = useState<string>("");
+  const [sortBy, setSortBy] = useState<"time" | "points" | "question">("time");
+  const [sortDesc, setSortDesc] = useState<boolean>(true);
 
   // Default to the latest played set
   useEffect(() => {
@@ -145,12 +173,12 @@ export function UserDetail() {
 
   return (
     <Card className="surface p-5">
-      <div className="flex items-center justify-between gap-4 mb-4 flex-wrap">
+      <div className="flex flex-col xl:flex-row xl:items-center justify-between gap-4 mb-4">
         <div className="flex items-center gap-2">
           <User className="h-5 w-5 text-primary" />
           <h2 className="font-display text-2xl tracking-wide">Nutzer-Detail</h2>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Select value={current} onValueChange={setSelUser}>
             <SelectTrigger className="w-48 bg-secondary border-border"><SelectValue placeholder="Teilnehmer wählen" /></SelectTrigger>
             <SelectContent>
@@ -166,6 +194,23 @@ export function UserDetail() {
               </SelectContent>
             </Select>
           )}
+
+          <Select value={sortBy} onValueChange={(v: any) => setSortBy(v)}>
+            <SelectTrigger className="w-40 bg-secondary border-border"><SelectValue placeholder="Sortierung" /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="time">Datum</SelectItem>
+              <SelectItem value="points">Punkte</SelectItem>
+              <SelectItem value="question">Fragen-Reihenfolge</SelectItem>
+            </SelectContent>
+          </Select>
+          
+          <button 
+            type="button"
+            className="inline-flex items-center justify-center whitespace-nowrap rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-secondary hover:bg-accent hover:text-accent-foreground h-10 w-10 shrink-0" 
+            onClick={() => setSortDesc(!sortDesc)}
+          >
+            {sortDesc ? <ArrowDown className="h-4 w-4" /> : <ArrowUp className="h-4 w-4" />}
+          </button>
         </div>
       </div>
 
@@ -174,7 +219,7 @@ export function UserDetail() {
       ) : !currentSet ? (
         <p className="text-sm text-muted-foreground py-8 text-center">Teilnehmer hat noch kein Set gespielt.</p>
       ) : (
-        <UserDetailTable rows={rows} setKey={currentSet.key} tableId={currentSet.tableId} />
+        <UserDetailTable rows={rows} setKey={currentSet.key} tableId={currentSet.tableId} sortBy={sortBy} sortDesc={sortDesc} />
       )}
     </Card>
   );
