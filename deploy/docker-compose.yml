@@ -1,6 +1,6 @@
 services:
   quizalarm-stat:
-    build: /mnt/Jannik-Cloud-Volume-01/quizalarm-stat/app
+    image: git.orfel.de/jannik/quizalarm-stat:latest
     container_name: quizalarm-stat
     restart: unless-stopped
     env_file: .env

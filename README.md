@@ -46,20 +46,17 @@ Spalten-Mapping (stabil) in `src/config/mappings.ts`.
 
 ## Deployment in Jannik-Cloud
 
-Die Dateien unter `deploy/` werden in dein `Jannik-Cloud`-Repo kopiert nach `services/quizalarm-stat/`:
+Das Service-Image wird lokal gebaut und in die Gitea Container Registry gepusht (`git.orfel.de/jannik/quizalarm-stat:latest`).
 
 ```
 services/quizalarm-stat/
-├── docker-compose.yml         (aus deploy/docker-compose.yml)
-├── quizalarm-stat.caddy       (aus deploy/quizalarm-stat.caddy)
-├── service.init               (aus deploy/service.init)
-├── generate-env.sh            (aus deploy/generate-env.sh)
+├── docker-compose.yml         (nutzt pre-built Image)
+├── quizalarm-stat.caddy       (Reverse Proxy Fragment)
+├── generate-env.sh            (Environment Generator)
 ├── .env.age                   (per generate-env.sh erzeugt)
 ├── service.enabled            (leere Datei zum Aktivieren)
 └── README.md
 ```
-
-Der Quellcode dieser App (alles außerhalb `deploy/`) wird nach `git.orfel.de/Jannik/Quizalarm-Stat` gepusht. `service.init` cloned ihn nach `/mnt/Jannik-Cloud-Volume-01/quizalarm-stat/app` und baut das Image.
 
 URL: <https://quizalarm-stat.orfel.de>
 
