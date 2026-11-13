@@ -193,15 +193,6 @@ export function TeamLogin({ onLoginSuccess }: TeamLoginProps) {
                         </span>
                       </div>
                       <div className="flex items-center gap-2 text-xs">
-                        {team.hasPassword ? (
-                          <span className="px-2 py-0.5 rounded-full bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 text-[11px] flex items-center gap-1">
-                            <Lock className="h-3 w-3" /> PW aktiv
-                          </span>
-                        ) : (
-                          <span className="px-2 py-0.5 rounded-full bg-amber-500/10 text-amber-400 border border-amber-500/20 text-[11px]">
-                            Kein PW
-                          </span>
-                        )}
                         <ArrowRight className="h-4 w-4 text-muted-foreground group-hover:text-primary group-hover:translate-x-0.5 transition" />
                       </div>
                     </button>
