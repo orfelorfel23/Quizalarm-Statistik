@@ -42,7 +42,8 @@ export function TeamLogin({ onLoginSuccess }: TeamLoginProps) {
         }
         const data = await res.json();
         if (isMounted) {
-          setTeams(data.teams || []);
+          const list = Array.isArray(data) ? data : (data?.teams || []);
+          setTeams(list);
         }
       } catch (err: any) {
         if (isMounted) {

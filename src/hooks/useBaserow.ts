@@ -22,7 +22,8 @@ export function useTeamParticipants(teamId: number | null) {
         const res = await fetch(`${apiBase}/api/teams`);
         if (!res.ok) return [];
         const data = await res.json();
-        const team = (data.teams || []).find((t: any) => t.id === teamId);
+        const list = Array.isArray(data) ? data : (data?.teams || []);
+        const team = list.find((t: any) => t.id === teamId);
         return team ? (team.participants || []) : [];
       } catch (e) {
         console.error("Error fetching team participants:", e);
