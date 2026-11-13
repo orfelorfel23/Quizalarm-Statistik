@@ -8,6 +8,7 @@ set -eu
 : "${SITE_SUBTITLE:=Live-Ergebnisse}"
 : "${TABLE_ANSWERS:?TABLE_ANSWERS missing}"
 : "${POLL_INTERVAL_MS:=20000}"
+: "${QUIZALARM_API_URL:=https://quizalarm.orfel.de}"
 
 # --- Collect all TABLE_SET_* env vars (A, B, C, D, …) ---
 SETS_JSON=""
@@ -33,6 +34,7 @@ cat > /usr/share/nginx/html/config.json <<EOF
     "sets": [${SETS_JSON}]
   },
   "pollIntervalMs": ${POLL_INTERVAL_MS},
+  "quizalarmApiUrl": "${QUIZALARM_API_URL}",
   "mock": false
 }
 EOF

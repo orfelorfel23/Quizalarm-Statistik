@@ -5,6 +5,7 @@ export type AppConfig = {
   tables: { answers: number; sets: SetConfig[] };
   pollIntervalMs: number;
   mock: boolean;
+  quizalarmApiUrl?: string;
 };
 
 let cached: AppConfig | null = null;
@@ -29,9 +30,11 @@ export async function loadConfig(): Promise<AppConfig> {
       },
       pollIntervalMs: 20000,
       mock: true,
+      quizalarmApiUrl: "https://quizalarm.orfel.de",
     };
   }
   // Auto-mock if all tableIds are 0 (developer left placeholder)
   if (cached.tables.answers === 0) cached.mock = true;
+  if (!cached.quizalarmApiUrl) cached.quizalarmApiUrl = "https://quizalarm.orfel.de";
   return cached;
 }

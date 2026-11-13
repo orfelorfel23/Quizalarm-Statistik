@@ -1,7 +1,8 @@
 import { Card } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { useAnswers, useConfig, useQuestions } from "@/hooks/useBaserow";
+import { useAnswers, useConfig, useQuestions, useTeamParticipants } from "@/hooks/useBaserow";
+import { getStoredSession } from "@/lib/auth";
 import { FIELDS } from "@/config/mappings";
 import { User, ArrowDown, ArrowUp } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
