@@ -7,9 +7,10 @@ import { FIELDS } from "@/config/mappings";
 import { User, ArrowDown, ArrowUp } from "lucide-react";
 import { useMemo, useState, useEffect } from "react";
 import { ImagePreview } from "./ImagePreview";
+import { LoadingState } from "./LoadingState";
 
 function UserDetailTable({ rows, setKey, tableId, sortBy, sortDesc }: { rows: any[]; setKey: string; tableId: number; sortBy: string; sortDesc: boolean }) {
-  const { data: questions = [] } = useQuestions(setKey, tableId);
+  const { data: questions = [], isPending: isQuestionsPending, isError: isQuestionsError } = useQuestions(setKey, tableId);
   const totalPts = rows.reduce((s, a) => s + Number(a[FIELDS.answers.points] ?? 0), 0);
   const correct = rows.filter((a) => a[FIELDS.answers.correct]).length;
   const quote = rows.length > 0 ? Math.round((correct / rows.length) * 100) : 0;
@@ -37,6 +38,14 @@ function UserDetailTable({ rows, setKey, tableId, sortBy, sortDesc }: { rows: an
     });
     return arr;
   }, [rows, questions, sortBy, sortDesc]);
+
+  if (isQuestionsPending) {
+    return <LoadingState label="Fragen werden geladen..." />;
+  }
+
+  if (isQuestionsError) {
+    return <p className="text-sm text-destructive py-8 text-center">Fehler beim Laden der Fragen.</p>;
+  }
 
   return (
     <>
@@ -112,8 +121,8 @@ function UserDetailTable({ rows, setKey, tableId, sortBy, sortDesc }: { rows: an
 }
 
 export function UserDetail() {
-  const { data: answers = [] } = useAnswers();
-  const { data: cfg } = useConfig();
+  const { data: answers = [], isPending: isAnswersPending, isError: isAnswersError } = useAnswers();
+  const { data: cfg, isPending: isConfigPending } = useConfig();
   const availableSets = cfg?.tables.sets ?? [];
 
   const users = useMemo(() => {
@@ -215,7 +224,11 @@ export function UserDetail() {
         </div>
       </div>
 
-      {!current ? (
+      {isConfigPending || isAnswersPending ? (
+        <LoadingState label="Antworten werden geladen..." />
+      ) : isAnswersError ? (
+        <p className="text-sm text-destructive py-8 text-center">Fehler beim Laden der Antworten.</p>
+      ) : !current ? (
         <p className="text-sm text-muted-foreground py-8 text-center">Noch keine Teilnehmer.</p>
       ) : !currentSet ? (
         <p className="text-sm text-muted-foreground py-8 text-center">Teilnehmer hat noch kein Set gespielt.</p>

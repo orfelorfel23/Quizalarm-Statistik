@@ -6,14 +6,15 @@ import { FIELDS } from "@/config/mappings";
 import { BarChart3, ArrowDown, ArrowUp } from "lucide-react";
 import { useMemo, useState } from "react";
 import { ImagePreview } from "./ImagePreview";
+import { LoadingState } from "./LoadingState";
 
 function normalizeText(s: string) {
   return s.toLowerCase().replace(/\s+/g, "");
 }
 
 function SetStats({ setKey, tableId, sortBy, sortDesc }: { setKey: string; tableId: number; sortBy: string; sortDesc: boolean }) {
-  const { data: answers = [] } = useAnswers();
-  const { data: questions = [] } = useQuestions(setKey, tableId);
+  const { data: answers = [], isPending: isAnswersPending, isError: isAnswersError } = useAnswers();
+  const { data: questions = [], isPending: isQuestionsPending, isError: isQuestionsError } = useQuestions(setKey, tableId);
 
   const rows = useMemo(() => {
     const setAnswers = answers.filter((a: any) => String(a[FIELDS.answers.set]).trim().endsWith(setKey));
@@ -153,6 +154,8 @@ function SetStats({ setKey, tableId, sortBy, sortDesc }: { setKey: string; table
     return mapped;
   }, [answers, questions, setKey, sortBy, sortDesc]);
 
+  if (isQuestionsPending || isAnswersPending) return <LoadingState label="Fragen und Antworten werden geladen..." />;
+  if (isQuestionsError || isAnswersError) return <p className="text-sm text-destructive py-6 text-center">Fehler beim Laden der Daten.</p>;
   if (!rows.length) return <p className="text-sm text-muted-foreground py-6 text-center">Keine Fragen.</p>;
 
   return (
@@ -200,10 +203,22 @@ function SetStats({ setKey, tableId, sortBy, sortDesc }: { setKey: string; table
 }
 
 export function QuestionStats() {
-  const { data: cfg } = useConfig();
+  const { data: cfg, isPending: isConfigPending } = useConfig();
   const sets = cfg?.tables.sets ?? [];
   const [sortBy, setSortBy] = useState<"order" | "count" | "rate">("order");
   const [sortDesc, setSortDesc] = useState<boolean>(true);
+
+  if (isConfigPending) {
+    return (
+      <Card className="surface p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <BarChart3 className="h-5 w-5 text-primary" />
+          <h2 className="font-display text-2xl tracking-wide">Frage-Statistik</h2>
+        </div>
+        <LoadingState label="Daten werden geladen..." />
+      </Card>
+    );
+  }
 
   if (!sets.length) return null;
 

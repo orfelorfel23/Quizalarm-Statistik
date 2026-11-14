@@ -5,6 +5,7 @@ import { useAnswers, useConfig } from "@/hooks/useBaserow";
 import { FIELDS } from "@/config/mappings";
 import { Trophy } from "lucide-react";
 import { useMemo } from "react";
+import { LoadingState } from "./LoadingState";
 
 function rankFor(answers: any[], setKey: string) {
   const rows = answers.filter((a) => String(a[FIELDS.answers.set]).trim().endsWith(setKey));
@@ -21,14 +22,26 @@ function rankFor(answers: any[], setKey: string) {
 }
 
 export function RankingTabs() {
-  const { data: cfg } = useConfig();
-  const { data: answers = [] } = useAnswers();
+  const { data: cfg, isPending: isConfigPending } = useConfig();
+  const { data: answers = [], isPending: isAnswersPending, isError: isAnswersError } = useAnswers();
   const sets = cfg?.tables.sets ?? [];
 
   const rankings = useMemo(
     () => Object.fromEntries(sets.map((s) => [s.key, rankFor(answers, s.key)])),
     [answers, sets],
   );
+
+  if (isConfigPending) {
+    return (
+      <Card className="surface p-5">
+        <div className="flex items-center gap-2 mb-4">
+          <Trophy className="h-5 w-5 text-primary" />
+          <h2 className="font-display text-2xl tracking-wide">Ranking pro Fragenset</h2>
+        </div>
+        <LoadingState label="Antworten werden geladen..." />
+      </Card>
+    );
+  }
 
   if (!sets.length) return null;
 
@@ -50,7 +63,11 @@ export function RankingTabs() {
           const list = rankings[s.key] ?? [];
           return (
             <TabsContent key={s.key} value={s.key} className="mt-4">
-              {list.length === 0 ? (
+              {isAnswersPending ? (
+                <LoadingState label="Antworten werden geladen..." />
+              ) : isAnswersError ? (
+                <p className="text-sm text-destructive py-8 text-center">Fehler beim Laden der Antworten.</p>
+              ) : list.length === 0 ? (
                 <p className="text-sm text-muted-foreground py-8 text-center">Noch keine Antworten.</p>
               ) : (
                 <Table>
