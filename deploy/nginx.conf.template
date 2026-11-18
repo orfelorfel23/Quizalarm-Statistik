@@ -6,6 +6,7 @@
 #  - Optional table whitelist below restricts which tables can be queried.
 
 worker_processes  1;
+pid               /tmp/nginx.pid;
 events { worker_connections 1024; }
 
 http {

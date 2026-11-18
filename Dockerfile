@@ -19,6 +19,10 @@ COPY --from=build /app/dist /usr/share/nginx/html
 COPY deploy/nginx.conf.template /etc/nginx/templates-src/nginx.conf.template
 COPY deploy/docker-entrypoint.sh /docker-entrypoint-quizstat.sh
 RUN sed -i 's/\r$//' /docker-entrypoint-quizstat.sh && chmod +x /docker-entrypoint-quizstat.sh
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup \
+    && mkdir -p /var/cache/nginx /var/log/nginx /etc/nginx/templates-src \
+    && chown -R appuser:appgroup /usr/share/nginx/html /etc/nginx /var/cache/nginx /var/log/nginx /docker-entrypoint-quizstat.sh
 EXPOSE 7850
+USER appuser
 ENTRYPOINT ["/docker-entrypoint-quizstat.sh"]
 CMD ["nginx", "-g", "daemon off;"]
